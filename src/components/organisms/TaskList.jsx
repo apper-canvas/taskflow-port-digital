@@ -173,9 +173,8 @@ const TaskList = ({
       <TaskGroup title="Tomorrow" tasks={groupedTasks.tomorrow} variant="tomorrow" />
       <TaskGroup title="Upcoming" tasks={groupedTasks.upcoming} variant="upcoming" />
       <TaskGroup title="No Due Date" tasks={groupedTasks.noDueDate} variant="default" />
-      <TaskGroup title="Completed" tasks={groupedTasks.completed} variant="completed" />
+<TaskGroup title="Completed" tasks={groupedTasks.completed} variant="completed" />
     </div>
-</div>
   )
 }
 
