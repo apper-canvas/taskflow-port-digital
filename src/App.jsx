@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 import TaskManager from '@/components/pages/TaskManager'
+import Statistics from '@/components/pages/Statistics'
 
 function App() {
   return (
@@ -8,6 +9,7 @@ function App() {
       <div className="min-h-screen bg-background">
         <Routes>
           <Route path="/" element={<TaskManager />} />
+          <Route path="/statistics" element={<Statistics />} />
         </Routes>
         <ToastContainer
           position="top-right"

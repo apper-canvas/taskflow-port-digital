@@ -167,7 +167,95 @@ if (!task) throw new Error('Task not found')
       nextId++
       count++
     }
+return generatedTasks
+  },
+
+  async getStatistics() {
+    await delay(200)
+    const now = new Date()
+    const allTasks = [...tasks]
     
-    return generatedTasks
+    // Basic stats
+    const totalTasks = allTasks.length
+    const completedTasks = allTasks.filter(t => t.completed).length
+    const completionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0
+    
+    // Overdue tasks
+    const overdueTasks = allTasks.filter(t => 
+      !t.completed && t.dueDate && new Date(t.dueDate) < now
+    ).length
+    
+    // Category distribution
+    const categoryStats = allTasks.reduce((acc, task) => {
+      acc[task.category] = (acc[task.category] || 0) + 1
+      return acc
+    }, {})
+    
+    // Priority distribution
+    const priorityStats = allTasks.reduce((acc, task) => {
+      acc[task.priority] = (acc[task.priority] || 0) + 1
+      return acc
+    }, {})
+    
+    // Completion trend (last 7 days)
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date(now)
+      date.setDate(date.getDate() - (6 - i))
+      date.setHours(0, 0, 0, 0)
+      return date
+    })
+    
+    const completionTrend = last7Days.map(date => {
+      const nextDay = new Date(date)
+      nextDay.setDate(nextDay.getDate() + 1)
+      
+      const completedOnDay = allTasks.filter(t => {
+        if (!t.completedAt) return false
+        const completedDate = new Date(t.completedAt)
+        return completedDate >= date && completedDate < nextDay
+      }).length
+      
+      return {
+        date: date.toISOString().split('T')[0],
+        completed: completedOnDay
+      }
+    })
+    
+    // Monthly completion rate
+    const last30Days = new Date(now)
+    last30Days.setDate(last30Days.getDate() - 30)
+    
+    const tasksLast30Days = allTasks.filter(t => 
+      new Date(t.createdAt) >= last30Days
+    )
+    const completedLast30Days = tasksLast30Days.filter(t => t.completed).length
+    const monthlyCompletionRate = tasksLast30Days.length > 0 
+      ? (completedLast30Days / tasksLast30Days.length) * 100 
+      : 0
+    
+    // Average completion time
+    const completedTasksWithTime = allTasks.filter(t => 
+      t.completed && t.completedAt && t.createdAt
+    )
+    
+    const avgCompletionTime = completedTasksWithTime.length > 0
+      ? completedTasksWithTime.reduce((sum, task) => {
+          const created = new Date(task.createdAt)
+          const completed = new Date(task.completedAt)
+          return sum + (completed - created)
+        }, 0) / completedTasksWithTime.length
+      : 0
+    
+    return {
+      totalTasks,
+      completedTasks,
+      completionRate: Math.round(completionRate * 10) / 10,
+      overdueTasks,
+      monthlyCompletionRate: Math.round(monthlyCompletionRate * 10) / 10,
+      avgCompletionTimeHours: Math.round((avgCompletionTime / (1000 * 60 * 60)) * 10) / 10,
+      categoryStats,
+      priorityStats,
+      completionTrend
+    }
   }
 }
