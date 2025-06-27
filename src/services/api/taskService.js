@@ -255,7 +255,26 @@ return generatedTasks
       avgCompletionTimeHours: Math.round((avgCompletionTime / (1000 * 60 * 60)) * 10) / 10,
       categoryStats,
       priorityStats,
-      completionTrend
+completionTrend
     }
+  },
+
+  async bulkComplete(ids) {
+    await delay(400)
+    const updatedTasks = []
+    
+    ids.forEach(id => {
+      const index = tasks.findIndex(t => t.id === id)
+      if (index !== -1 && !tasks[index].completed) {
+        tasks[index] = {
+          ...tasks[index],
+          completed: true,
+          completedAt: new Date().toISOString()
+        }
+        updatedTasks.push({ ...tasks[index] })
+      }
+    })
+    
+    return updatedTasks
   }
 }

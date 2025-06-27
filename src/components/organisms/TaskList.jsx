@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { isToday, isTomorrow, isFuture, isPast } from 'date-fns'
-import TaskItem from '@/components/molecules/TaskItem'
-import Loading from '@/components/ui/Loading'
-import Error from '@/components/ui/Error'
-import Empty from '@/components/ui/Empty'
-import { taskService } from '@/services/api/taskService'
-import { toast } from 'react-toastify'
+import React, { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { isFuture, isPast, isToday, isTomorrow } from "date-fns";
+import { toast } from "react-toastify";
+import { taskService } from "@/services/api/taskService";
+import TaskItem from "@/components/molecules/TaskItem";
+import Empty from "@/components/ui/Empty";
+import Loading from "@/components/ui/Loading";
+import Error from "@/components/ui/Error";
 
 const TaskList = ({ 
   searchQuery = '', 
@@ -175,6 +175,7 @@ const TaskList = ({
       <TaskGroup title="No Due Date" tasks={groupedTasks.noDueDate} variant="default" />
       <TaskGroup title="Completed" tasks={groupedTasks.completed} variant="completed" />
     </div>
+</div>
   )
 }
 

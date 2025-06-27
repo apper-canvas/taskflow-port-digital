@@ -1,10 +1,10 @@
-import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { format, isToday, isTomorrow, isPast } from 'date-fns'
-import Checkbox from '@/components/atoms/Checkbox'
-import Badge from '@/components/atoms/Badge'
-import Button from '@/components/atoms/Button'
-import ApperIcon from '@/components/ApperIcon'
+import React, { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { format, isPast, isToday, isTomorrow } from "date-fns";
+import ApperIcon from "@/components/ApperIcon";
+import Checkbox from "@/components/atoms/Checkbox";
+import Badge from "@/components/atoms/Badge";
+import Button from "@/components/atoms/Button";
 
 const TaskItem = ({ 
   task, 
@@ -12,7 +12,9 @@ const TaskItem = ({
   onEdit, 
   onDelete,
   categories = [],
-  className = '' 
+  className = '',
+  selected = false,
+  onSelectionChange
 }) => {
   const [isCompleting, setIsCompleting] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
@@ -88,16 +90,24 @@ const TaskItem = ({
         scale: isCompleting ? 1.02 : 1 
       }}
       exit={{ opacity: 0, y: -20, scale: 0.95 }}
-      className={`card p-4 group ${task.completed ? 'opacity-70' : ''} ${isOverdue ? 'border-l-4 border-error' : ''} ${className}`}
+className={`card p-4 group ${task.completed ? 'opacity-70' : ''} ${isOverdue ? 'border-l-4 border-error' : ''} ${selected ? 'ring-2 ring-primary' : ''} ${className}`}
     >
       <div className="flex items-center space-x-4">
+        {onSelectionChange && (
+          <Checkbox
+            checked={selected}
+            onChange={(checked) => onSelectionChange(task.id, checked)}
+            size="sm"
+            className="text-primary"
+          />
+        )}
+        
         <Checkbox
           checked={task.completed}
           onChange={handleToggleComplete}
           disabled={isCompleting}
           size="md"
         />
-        
         <div className="flex-1 min-w-0">
           <div className="flex items-center space-x-2 mb-2">
             <h3 className={`text-base font-medium ${task.completed ? 'line-through text-gray-500' : 'text-gray-900'} truncate`}>
