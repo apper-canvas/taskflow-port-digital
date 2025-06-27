@@ -1,0 +1,6 @@
+packages:
+  - "."
+
+# Disable strict peer dependency checking to allow react-sortable-hoc
+# to work with React 18, even though it only declares support for React 16-17
+strictPeerDependencies: false
