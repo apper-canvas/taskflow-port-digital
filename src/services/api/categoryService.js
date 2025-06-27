@@ -17,14 +17,15 @@ export const categoryService = {
     return { ...category }
   },
 
-  async create(categoryData) {
+async create(categoryData) {
     await delay(300)
     const maxId = Math.max(
-      ...categories.map(c => c.id === parseInt(c.id) ? parseInt(c.id) : 0), 
+      ...categories.map(c => parseInt(c.Id) || 0), 
       0
     )
     const newCategory = {
-      id: (maxId + 1).toString(),
+      Id: maxId + 1,
+      id: (maxId + 1).toString(), // Keep string id for backward compatibility
       name: categoryData.name,
       color: categoryData.color || '#5B4FE9',
       icon: categoryData.icon || 'Tag'

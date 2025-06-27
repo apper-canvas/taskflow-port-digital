@@ -1,15 +1,19 @@
+import { useState } from 'react'
 import { AnimatePresence } from 'framer-motion'
+import { toast } from 'react-toastify'
 import Header from '@/components/organisms/Header'
 import TaskList from '@/components/organisms/TaskList'
 import TaskForm from '@/components/organisms/TaskForm'
+import CategoryForm from '@/components/organisms/CategoryForm'
 import FilterBar from '@/components/molecules/FilterBar'
 import CategoryFilter from '@/components/molecules/CategoryFilter'
 import Loading from '@/components/ui/Loading'
 import Error from '@/components/ui/Error'
 import { useTaskManager } from '@/hooks/useTaskManager'
+import { categoryService } from '@/services/api/categoryService'
 
 const TaskManager = () => {
-  const {
+const {
     // Data
     categories,
     loading,
@@ -42,6 +46,34 @@ const TaskManager = () => {
     loadData
   } = useTaskManager()
 
+  // Category form state
+  const [showCategoryForm, setShowCategoryForm] = useState(false)
+  const [categorySubmitting, setCategorySubmitting] = useState(false)
+
+  const handleAddCategory = () => {
+    setShowCategoryForm(true)
+  }
+
+  const handleCloseCategoryForm = () => {
+    setShowCategoryForm(false)
+  }
+
+  const handleCategorySubmit = async (categoryData) => {
+    setCategorySubmitting(true)
+    try {
+      const newCategory = await categoryService.create(categoryData)
+      toast.success(`Category "${newCategory.name}" created successfully!`)
+      setShowCategoryForm(false)
+      // Trigger a data reload to refresh categories
+      loadData()
+    } catch (error) {
+      console.error('Error creating category:', error)
+      toast.error('Failed to create category. Please try again.')
+    } finally {
+      setCategorySubmitting(false)
+    }
+  }
+
   if (loading) return <Loading />
   if (error) return <Error message={error} onRetry={loadData} />
 
@@ -58,11 +90,12 @@ return (
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar */}
           <div className="lg:col-span-1 space-y-6">
-            <CategoryFilter
+<CategoryFilter
               categories={categories}
               activeCategory={filters.category}
               onCategoryChange={handleCategoryChange}
               taskCounts={taskCounts}
+              onAddCategory={handleAddCategory}
             />
           </div>
 
@@ -87,7 +120,7 @@ return (
         </div>
       </div>
 
-      {/* Task Form Modal */}
+{/* Task Form Modal */}
       <AnimatePresence>
         {showTaskForm && (
           <TaskForm
@@ -96,6 +129,17 @@ return (
             onSubmit={handleTaskSubmit}
             onCancel={handleCloseTaskForm}
             isSubmitting={submitting}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Category Form Modal */}
+      <AnimatePresence>
+        {showCategoryForm && (
+          <CategoryForm
+            onSubmit={handleCategorySubmit}
+            onCancel={handleCloseCategoryForm}
+            isSubmitting={categorySubmitting}
           />
         )}
       </AnimatePresence>
