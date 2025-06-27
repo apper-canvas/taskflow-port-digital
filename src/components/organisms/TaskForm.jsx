@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { format } from 'date-fns'
-import Input from '@/components/atoms/Input'
-import Select from '@/components/atoms/Select'
-import Button from '@/components/atoms/Button'
-import ApperIcon from '@/components/ApperIcon'
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { format } from "date-fns";
+import ApperIcon from "@/components/ApperIcon";
+import Select from "@/components/atoms/Select";
+import Button from "@/components/atoms/Button";
+import Input from "@/components/atoms/Input";
 
 const TaskForm = ({ 
   task = null, 
@@ -13,22 +13,30 @@ const TaskForm = ({
   onCancel,
   isSubmitting = false 
 }) => {
-  const [formData, setFormData] = useState({
+const [formData, setFormData] = useState({
     title: '',
     priority: 'medium',
     category: '',
-    dueDate: ''
+    dueDate: '',
+    isRecurring: false,
+    recurrencePattern: 'daily',
+    recurrenceFrequency: 1,
+    recurrenceEndDate: ''
   })
   
   const [errors, setErrors] = useState({})
 
-  useEffect(() => {
+useEffect(() => {
     if (task) {
       setFormData({
         title: task.title || '',
         priority: task.priority || 'medium',
         category: task.category || '',
-        dueDate: task.dueDate ? format(new Date(task.dueDate), 'yyyy-MM-dd\'T\'HH:mm') : ''
+        dueDate: task.dueDate ? format(new Date(task.dueDate), 'yyyy-MM-dd\'T\'HH:mm') : '',
+        isRecurring: task.isRecurring || false,
+        recurrencePattern: task.recurrencePattern || 'daily',
+        recurrenceFrequency: task.recurrenceFrequency || 1,
+        recurrenceEndDate: task.recurrenceEndDate || ''
       })
     }
   }, [task])
@@ -71,13 +79,19 @@ const TaskForm = ({
     { value: 'low', label: 'Low Priority' },
     { value: 'medium', label: 'Medium Priority' },
     { value: 'high', label: 'High Priority' }
+]
+
+  const recurrenceOptions = [
+    { value: 'daily', label: 'Day(s)' },
+    { value: 'weekly', label: 'Week(s)' },
+    { value: 'monthly', label: 'Month(s)' },
+    { value: 'yearly', label: 'Year(s)' }
   ]
 
   const categoryOptions = categories.map(category => ({
     value: category.id,
     label: category.name
   }))
-
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -132,13 +146,62 @@ const TaskForm = ({
             />
           </div>
 
-          <Input
+<Input
             label="Due Date"
             type="datetime-local"
             value={formData.dueDate}
             onChange={(e) => handleChange('dueDate', e.target.value)}
             icon="Calendar"
+            error={errors.dueDate}
           />
+
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                id="isRecurring"
+                checked={formData.isRecurring}
+                onChange={(e) => handleChange('isRecurring', e.target.checked)}
+                className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+              />
+              <label htmlFor="isRecurring" className="text-sm font-medium text-gray-700">
+                Make this a recurring task
+              </label>
+            </div>
+
+            {formData.isRecurring && (
+              <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                <div className="grid grid-cols-2 gap-4">
+                  <Select
+                    label="Repeat Pattern"
+                    value={formData.recurrencePattern}
+                    onChange={(e) => handleChange('recurrencePattern', e.target.value)}
+                    options={recurrenceOptions}
+                    placeholder="Select pattern"
+                  />
+
+                  <Input
+                    label="Every"
+                    type="number"
+                    min="1"
+                    max="30"
+                    value={formData.recurrenceFrequency}
+                    onChange={(e) => handleChange('recurrenceFrequency', parseInt(e.target.value) || 1)}
+                    placeholder="1"
+                    error={errors.recurrenceFrequency}
+                  />
+                </div>
+
+                <Input
+                  label="End Date (Optional)"
+                  type="date"
+                  value={formData.recurrenceEndDate}
+                  onChange={(e) => handleChange('recurrenceEndDate', e.target.value)}
+                  icon="Calendar"
+                />
+              </div>
+            )}
+          </div>
 
           <div className="flex items-center space-x-4 pt-4">
             <Button

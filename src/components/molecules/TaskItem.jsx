@@ -127,7 +127,16 @@ const TaskItem = ({
                   color: category.color 
                 }}
               >
-                {category.name}
+{category.name}
+              </Badge>
+            )}
+            
+            {task.isRecurring && (
+              <Badge variant="default" size="sm" icon="Repeat" className="text-purple-600">
+                {task.recurrencePattern === 'daily' && 'Daily'}
+                {task.recurrencePattern === 'weekly' && 'Weekly'}
+                {task.recurrencePattern === 'monthly' && 'Monthly'}
+                {task.recurrenceFrequency > 1 && ` (${task.recurrenceFrequency}x)`}
               </Badge>
             )}
             
