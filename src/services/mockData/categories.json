@@ -1,0 +1,38 @@
+[
+  {
+    "id": "work",
+    "name": "Work",
+    "color": "#5B4FE9",
+    "icon": "Briefcase"
+  },
+  {
+    "id": "personal",
+    "name": "Personal",
+    "color": "#4ECDC4",
+    "icon": "User"
+  },
+  {
+    "id": "health",
+    "name": "Health",
+    "color": "#FF6B6B",
+    "icon": "Heart"
+  },
+  {
+    "id": "travel",
+    "name": "Travel",
+    "color": "#FFD93D",
+    "icon": "Plane"
+  },
+  {
+    "id": "shopping",
+    "name": "Shopping",
+    "color": "#8B7FF0",
+    "icon": "ShoppingBag"
+  },
+  {
+    "id": "finance",
+    "name": "Finance",
+    "color": "#4D96FF",
+    "icon": "DollarSign"
+  }
+]

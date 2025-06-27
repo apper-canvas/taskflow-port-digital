@@ -1,0 +1,72 @@
+[
+  {
+    "id": "1",
+    "title": "Review project proposals",
+    "completed": false,
+    "priority": "high",
+    "category": "work",
+    "dueDate": "2024-01-15T09:00:00.000Z",
+    "createdAt": "2024-01-14T08:00:00.000Z",
+    "completedAt": null
+  },
+  {
+    "id": "2",
+    "title": "Buy groceries for the week",
+    "completed": false,
+    "priority": "medium",
+    "category": "personal",
+    "dueDate": "2024-01-15T18:00:00.000Z",
+    "createdAt": "2024-01-14T10:30:00.000Z",
+    "completedAt": null
+  },
+  {
+    "id": "3",
+    "title": "Call dentist for appointment",
+    "completed": true,
+    "priority": "low",
+    "category": "health",
+    "dueDate": "2024-01-14T14:00:00.000Z",
+    "createdAt": "2024-01-13T16:00:00.000Z",
+    "completedAt": "2024-01-14T11:30:00.000Z"
+  },
+  {
+    "id": "4",
+    "title": "Prepare presentation slides",
+    "completed": false,
+    "priority": "high",
+    "category": "work",
+    "dueDate": "2024-01-16T10:00:00.000Z",
+    "createdAt": "2024-01-14T09:15:00.000Z",
+    "completedAt": null
+  },
+  {
+    "id": "5",
+    "title": "Book flight tickets",
+    "completed": false,
+    "priority": "medium",
+    "category": "travel",
+    "dueDate": "2024-01-17T12:00:00.000Z",
+    "createdAt": "2024-01-14T14:20:00.000Z",
+    "completedAt": null
+  },
+  {
+    "id": "6",
+    "title": "Update website content",
+    "completed": true,
+    "priority": "medium",
+    "category": "work",
+    "dueDate": "2024-01-13T16:00:00.000Z",
+    "createdAt": "2024-01-12T10:00:00.000Z",
+    "completedAt": "2024-01-13T15:45:00.000Z"
+  },
+  {
+    "id": "7",
+    "title": "Plan weekend hiking trip",
+    "completed": false,
+    "priority": "low",
+    "category": "personal",
+    "dueDate": "2024-01-18T09:00:00.000Z",
+    "createdAt": "2024-01-14T13:00:00.000Z",
+    "completedAt": null
+  }
+]
