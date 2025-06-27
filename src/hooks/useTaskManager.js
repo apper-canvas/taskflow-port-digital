@@ -169,7 +169,7 @@ export const useTaskManager = () => {
     handleAddTask,
     handleCloseTaskForm,
     
-    // Actions
+// Actions
     refreshData,
     loadData
   }

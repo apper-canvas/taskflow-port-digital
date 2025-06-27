@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 import TaskManager from '@/components/pages/TaskManager'
 import Statistics from '@/components/pages/Statistics'
+import Calendar from '@/components/pages/Calendar'
 
 function App() {
   return (
@@ -10,6 +11,7 @@ function App() {
         <Routes>
           <Route path="/" element={<TaskManager />} />
           <Route path="/statistics" element={<Statistics />} />
+          <Route path="/calendar" element={<Calendar />} />
         </Routes>
         <ToastContainer
           position="top-right"

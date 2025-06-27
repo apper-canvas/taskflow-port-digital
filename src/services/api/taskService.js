@@ -274,7 +274,33 @@ completionTrend
         updatedTasks.push({ ...tasks[index] })
       }
     })
+return updatedTasks
+  },
+
+  async getTasksByDateRange(startDate, endDate) {
+    await delay(200)
+    const start = new Date(startDate)
+    const end = new Date(endDate)
     
-    return updatedTasks
+    return tasks.filter(task => {
+      if (!task.dueDate) return false
+      const taskDate = new Date(task.dueDate)
+      return taskDate >= start && taskDate <= end
+    }).map(task => ({ ...task }))
+  },
+
+  async getTasksByDate(date) {
+    await delay(150)
+    const targetDate = new Date(date)
+    const startOfDay = new Date(targetDate)
+    startOfDay.setHours(0, 0, 0, 0)
+    const endOfDay = new Date(targetDate)
+    endOfDay.setHours(23, 59, 59, 999)
+    
+    return tasks.filter(task => {
+      if (!task.dueDate) return false
+      const taskDate = new Date(task.dueDate)
+      return taskDate >= startOfDay && taskDate <= endOfDay
+    }).map(task => ({ ...task }))
   }
 }
