@@ -38,36 +38,97 @@ const TaskList = ({
     }
   }
 
-  const handleToggleComplete = async (taskId) => {
+const handleToggleComplete = async (taskId, subtaskId = null, completed = null) => {
     try {
-      const updatedTask = await taskService.toggleComplete(taskId)
-      setTasks(prevTasks => 
-        prevTasks.map(task => 
-          task.id === taskId ? updatedTask : task
+      if (subtaskId) {
+        // Handle subtask toggle
+        const updatedSubtask = await taskService.updateSubtask(taskId, subtaskId, { 
+          completed: completed !== null ? completed : undefined 
+        })
+        
+        // Refresh the task to get updated progress
+        const updatedTask = await taskService.getById(taskId)
+        setTasks(prevTasks => 
+          prevTasks.map(task => 
+            task.id === taskId ? updatedTask : task
+          )
         )
-      )
-      
-      if (updatedTask.completed) {
-        toast.success('Task completed! 🎉')
+        
+        if (updatedSubtask.completed) {
+          toast.success('Subtask completed! ✅')
+        } else {
+          toast.info('Subtask marked as pending')
+        }
       } else {
-        toast.info('Task marked as pending')
+        // Handle main task toggle
+        const updatedTask = await taskService.toggleComplete(taskId)
+        setTasks(prevTasks => 
+          prevTasks.map(task => 
+            task.id === taskId ? updatedTask : task
+          )
+        )
+        
+        if (updatedTask.completed) {
+          toast.success('Task completed! 🎉')
+        } else {
+          toast.info('Task marked as pending')
+        }
       }
     } catch (err) {
-      toast.error('Failed to update task')
+      toast.error(subtaskId ? 'Failed to update subtask' : 'Failed to update task')
     }
   }
 
-  const handleDeleteTask = async (taskId) => {
-    if (!window.confirm('Are you sure you want to delete this task?')) return
-    
-    try {
-      await taskService.delete(taskId)
-      setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId))
-      toast.success('Task deleted successfully')
-    } catch (err) {
-      toast.error('Failed to delete task')
+  const handleTaskEdit = async (task, subtaskEdit = null) => {
+    if (subtaskEdit) {
+      try {
+        await taskService.updateSubtask(task.id, subtaskEdit.subtaskId, { 
+          title: subtaskEdit.title 
+        })
+        
+        const updatedTask = await taskService.getById(task.id)
+        setTasks(prevTasks => 
+          prevTasks.map(t => 
+            t.id === task.id ? updatedTask : t
+          )
+        )
+        toast.success('Subtask updated successfully')
+      } catch (err) {
+        toast.error('Failed to update subtask')
+      }
+    } else {
+      onTaskEdit?.(task)
     }
   }
+
+  const handleTaskDelete = async (taskId, subtaskId = null) => {
+    if (subtaskId) {
+      try {
+        await taskService.deleteSubtask(taskId, subtaskId)
+        
+        const updatedTask = await taskService.getById(taskId)
+        setTasks(prevTasks => 
+          prevTasks.map(task => 
+            task.id === taskId ? updatedTask : task
+          )
+        )
+        toast.success('Subtask deleted successfully')
+      } catch (err) {
+        toast.error('Failed to delete subtask')
+      }
+    } else {
+      if (!window.confirm('Are you sure you want to delete this task?')) return
+      
+      try {
+        await taskService.delete(taskId)
+        setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId))
+        toast.success('Task deleted successfully')
+      } catch (err) {
+        toast.error('Failed to delete task')
+      }
+    }
+  }
+
 
   // Filter tasks
   const filteredTasks = tasks.filter(task => {
@@ -151,13 +212,13 @@ const TaskList = ({
         <div className="space-y-3">
           <AnimatePresence>
             {groupTasks.map((task) => (
-              <TaskItem
+<TaskItem
                 key={task.id}
                 task={task}
                 categories={categories}
                 onToggleComplete={handleToggleComplete}
-                onEdit={onTaskEdit}
-                onDelete={handleDeleteTask}
+                onEdit={handleTaskEdit}
+                onDelete={handleTaskDelete}
               />
             ))}
           </AnimatePresence>

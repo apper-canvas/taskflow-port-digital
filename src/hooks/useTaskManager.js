@@ -171,6 +171,65 @@ export const useTaskManager = () => {
     
 // Actions
     refreshData,
-    loadData
+    loadData,
+    
+    // Subtask operations
+    handleCreateSubtask: async (taskId, subtaskData) => {
+      try {
+        const newSubtask = await taskService.createSubtask(taskId, subtaskData)
+        const updatedTask = await taskService.getById(taskId)
+        setTasks(prev => prev.map(task => 
+          task.id === taskId ? updatedTask : task
+        ))
+        toast.success('Subtask added successfully')
+        return newSubtask
+      } catch (err) {
+        toast.error('Failed to add subtask')
+        throw err
+      }
+    },
+    
+    handleUpdateSubtask: async (taskId, subtaskId, updateData) => {
+      try {
+        const updatedSubtask = await taskService.updateSubtask(taskId, subtaskId, updateData)
+        const updatedTask = await taskService.getById(taskId)
+        setTasks(prev => prev.map(task => 
+          task.id === taskId ? updatedTask : task
+        ))
+        toast.success('Subtask updated successfully')
+        return updatedSubtask
+      } catch (err) {
+        toast.error('Failed to update subtask')
+        throw err
+      }
+    },
+    
+    handleDeleteSubtask: async (taskId, subtaskId) => {
+      try {
+        await taskService.deleteSubtask(taskId, subtaskId)
+        const updatedTask = await taskService.getById(taskId)
+        setTasks(prev => prev.map(task => 
+          task.id === taskId ? updatedTask : task
+        ))
+        toast.success('Subtask deleted successfully')
+      } catch (err) {
+        toast.error('Failed to delete subtask')
+        throw err
+      }
+    },
+    
+    handleReorderSubtasks: async (taskId, subtaskIds) => {
+      try {
+        await taskService.reorderSubtasks(taskId, subtaskIds)
+        const updatedTask = await taskService.getById(taskId)
+        setTasks(prev => prev.map(task => 
+          task.id === taskId ? updatedTask : task
+        ))
+        toast.success('Subtasks reordered successfully')
+      } catch (err) {
+        toast.error('Failed to reorder subtasks')
+        throw err
+      }
+    }
   }
 }

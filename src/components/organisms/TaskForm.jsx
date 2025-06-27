@@ -21,9 +21,12 @@ const [formData, setFormData] = useState({
     isRecurring: false,
     recurrencePattern: 'daily',
     recurrenceFrequency: 1,
-    recurrenceEndDate: ''
+    recurrenceEndDate: '',
+    subtasks: []
   })
   
+  const [newSubtask, setNewSubtask] = useState('')
+  const [showSubtasks, setShowSubtasks] = useState(false)
   const [errors, setErrors] = useState({})
 
 useEffect(() => {
@@ -36,8 +39,10 @@ useEffect(() => {
         isRecurring: task.isRecurring || false,
         recurrencePattern: task.recurrencePattern || 'daily',
         recurrenceFrequency: task.recurrenceFrequency || 1,
-        recurrenceEndDate: task.recurrenceEndDate || ''
+        recurrenceEndDate: task.recurrenceEndDate || '',
+        subtasks: task.subtasks ? [...task.subtasks] : []
       })
+      setShowSubtasks(task.subtasks && task.subtasks.length > 0)
     }
   }, [task])
 
@@ -73,8 +78,39 @@ useEffect(() => {
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }))
     }
+}
+
+  const handleAddSubtask = () => {
+    if (!newSubtask.trim()) return
+    
+    const newSubtaskObj = {
+      Id: Math.max(...formData.subtasks.map(s => s.Id || 0), 0) + 1,
+      title: newSubtask.trim(),
+      completed: false
+    }
+    
+    setFormData(prev => ({
+      ...prev,
+      subtasks: [...prev.subtasks, newSubtaskObj]
+    }))
+    setNewSubtask('')
   }
 
+  const handleRemoveSubtask = (subtaskId) => {
+    setFormData(prev => ({
+      ...prev,
+      subtasks: prev.subtasks.filter(s => s.Id !== subtaskId)
+    }))
+  }
+
+  const handleSubtaskTitleChange = (subtaskId, newTitle) => {
+    setFormData(prev => ({
+      ...prev,
+      subtasks: prev.subtasks.map(s => 
+        s.Id === subtaskId ? { ...s, title: newTitle } : s
+      )
+    }))
+  }
   const priorityOptions = [
     { value: 'low', label: 'Low Priority' },
     { value: 'medium', label: 'Medium Priority' },
@@ -199,6 +235,90 @@ useEffect(() => {
                   onChange={(e) => handleChange('recurrenceEndDate', e.target.value)}
                   icon="Calendar"
                 />
+              </div>
+)}
+          </div>
+
+          {/* Subtasks Section */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium text-gray-700">
+                Subtasks
+              </label>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                icon={showSubtasks ? "ChevronUp" : "ChevronDown"}
+                onClick={() => setShowSubtasks(!showSubtasks)}
+                className="text-gray-500 hover:text-primary"
+              >
+                {showSubtasks ? 'Hide' : 'Add'} Subtasks
+              </Button>
+            </div>
+
+            {showSubtasks && (
+              <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
+                <div className="flex space-x-2">
+                  <Input
+                    type="text"
+                    placeholder="Add a subtask..."
+                    value={newSubtask}
+                    onChange={(e) => setNewSubtask(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        handleAddSubtask()
+                      }
+                    }}
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="primary"
+                    size="sm"
+                    icon="Plus"
+                    onClick={handleAddSubtask}
+                    disabled={!newSubtask.trim()}
+                  >
+                    Add
+                  </Button>
+                </div>
+
+                {formData.subtasks.length > 0 && (
+                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                    {formData.subtasks.map((subtask) => (
+                      <div
+                        key={subtask.Id}
+                        className="flex items-center space-x-3 p-2 bg-white rounded border"
+                      >
+                        <ApperIcon name="GripVertical" size={16} className="text-gray-400" />
+                        <input
+                          type="text"
+                          value={subtask.title}
+                          onChange={(e) => handleSubtaskTitleChange(subtask.Id, e.target.value)}
+                          className="flex-1 text-sm bg-transparent border-none focus:outline-none"
+                          placeholder="Subtask title..."
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          icon="Trash2"
+                          onClick={() => handleRemoveSubtask(subtask.Id)}
+                          className="text-gray-400 hover:text-error"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {formData.subtasks.length > 0 && (
+                  <div className="text-xs text-gray-500 flex items-center space-x-1">
+                    <ApperIcon name="Info" size={12} />
+                    <span>Drag to reorder, double-click to edit</span>
+                  </div>
+                )}
               </div>
             )}
           </div>

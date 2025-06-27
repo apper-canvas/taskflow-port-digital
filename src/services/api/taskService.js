@@ -4,6 +4,26 @@ let tasks = [...tasksData]
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
+// Subtask utilities
+const getNextSubtaskId = (task) => {
+  if (!task.subtasks || task.subtasks.length === 0) return 1
+  return Math.max(...task.subtasks.map(s => s.Id)) + 1
+}
+
+const calculateTaskProgress = (task) => {
+  if (!task.subtasks || task.subtasks.length === 0) return { completed: 0, total: 0, percentage: 0 }
+  
+  const total = task.subtasks.length
+  const completed = task.subtasks.filter(s => s.completed).length
+  const percentage = total > 0 ? Math.round((completed / total) * 100) : 0
+  
+  return { completed, total, percentage }
+}
+
+const shouldAutoCompleteTask = (task) => {
+  if (!task.subtasks || task.subtasks.length === 0) return false
+  return task.subtasks.every(s => s.completed)
+}
 // Date utility functions
 const addDays = (date, days) => {
   const result = new Date(date)
@@ -40,7 +60,7 @@ export const taskService = {
     return { ...task }
   },
 
-  async create(taskData) {
+async create(taskData) {
     await delay(400)
     const maxId = Math.max(...tasks.map(t => parseInt(t.id)), 0)
     const newTask = {
@@ -51,23 +71,37 @@ export const taskService = {
       category: taskData.category || 'personal',
       dueDate: taskData.dueDate || null,
       createdAt: new Date().toISOString(),
-      completedAt: null
+      completedAt: null,
+      subtasks: taskData.subtasks ? taskData.subtasks.map((subtask, index) => ({
+        Id: index + 1,
+        title: subtask.title,
+        completed: false
+      })) : []
     }
     tasks.push(newTask)
     return { ...newTask }
   },
 
-  async update(id, updateData) {
+async update(id, updateData) {
     await delay(300)
     const index = tasks.findIndex(t => t.id === id)
     if (index === -1) throw new Error('Task not found')
     
+    const currentTask = tasks[index]
+    
     const updatedTask = {
-      ...tasks[index],
+      ...currentTask,
       ...updateData,
-      completedAt: updateData.completed && !tasks[index].completed 
+      subtasks: updateData.subtasks !== undefined ? updateData.subtasks : currentTask.subtasks,
+      completedAt: updateData.completed && !currentTask.completed 
         ? new Date().toISOString() 
-        : updateData.completed === false ? null : tasks[index].completedAt
+        : updateData.completed === false ? null : currentTask.completedAt
+    }
+    
+    // Auto-complete task if all subtasks are completed
+    if (updatedTask.subtasks && updatedTask.subtasks.length > 0 && shouldAutoCompleteTask(updatedTask) && !updatedTask.completed) {
+      updatedTask.completed = true
+      updatedTask.completedAt = new Date().toISOString()
     }
     
     tasks[index] = updatedTask
@@ -302,5 +336,114 @@ return updatedTasks
       const taskDate = new Date(task.dueDate)
       return taskDate >= startOfDay && taskDate <= endOfDay
     }).map(task => ({ ...task }))
+},
+
+  // Subtask operations
+  async getSubtasks(taskId) {
+    await delay(150)
+    const task = tasks.find(t => t.id === taskId)
+    if (!task) throw new Error('Task not found')
+    return task.subtasks || []
+  },
+
+  async createSubtask(taskId, subtaskData) {
+    await delay(250)
+    const taskIndex = tasks.findIndex(t => t.id === taskId)
+    if (taskIndex === -1) throw new Error('Task not found')
+    
+    const task = tasks[taskIndex]
+    if (!task.subtasks) task.subtasks = []
+    
+    const newSubtask = {
+      Id: getNextSubtaskId(task),
+      title: subtaskData.title,
+      completed: false
+    }
+    
+    task.subtasks.push(newSubtask)
+    tasks[taskIndex] = { ...task }
+    
+    return { ...newSubtask }
+  },
+
+  async updateSubtask(taskId, subtaskId, updateData) {
+    await delay(200)
+    const taskIndex = tasks.findIndex(t => t.id === taskId)
+    if (taskIndex === -1) throw new Error('Task not found')
+    
+    const task = tasks[taskIndex]
+    if (!task.subtasks) throw new Error('No subtasks found')
+    
+    const subtaskIndex = task.subtasks.findIndex(s => s.Id === subtaskId)
+    if (subtaskIndex === -1) throw new Error('Subtask not found')
+    
+    const updatedSubtask = {
+      ...task.subtasks[subtaskIndex],
+      ...updateData
+    }
+    
+    task.subtasks[subtaskIndex] = updatedSubtask
+    
+    // Auto-complete parent task if all subtasks are completed
+    if (shouldAutoCompleteTask(task) && !task.completed) {
+      task.completed = true
+      task.completedAt = new Date().toISOString()
+    }
+    // Auto-uncomplete parent task if any subtask is uncompleted
+    else if (task.completed && !shouldAutoCompleteTask(task)) {
+      task.completed = false
+      task.completedAt = null
+    }
+    
+    tasks[taskIndex] = { ...task }
+    return { ...updatedSubtask }
+  },
+
+  async deleteSubtask(taskId, subtaskId) {
+    await delay(200)
+    const taskIndex = tasks.findIndex(t => t.id === taskId)
+    if (taskIndex === -1) throw new Error('Task not found')
+    
+    const task = tasks[taskIndex]
+    if (!task.subtasks) throw new Error('No subtasks found')
+    
+    const subtaskIndex = task.subtasks.findIndex(s => s.Id === subtaskId)
+    if (subtaskIndex === -1) throw new Error('Subtask not found')
+    
+    const deletedSubtask = task.subtasks[subtaskIndex]
+    task.subtasks.splice(subtaskIndex, 1)
+    
+    // Update parent task completion status
+    if (task.completed && task.subtasks.length > 0 && !shouldAutoCompleteTask(task)) {
+      task.completed = false
+      task.completedAt = null
+    }
+    
+    tasks[taskIndex] = { ...task }
+    return { ...deletedSubtask }
+  },
+
+  async reorderSubtasks(taskId, subtaskIds) {
+    await delay(200)
+    const taskIndex = tasks.findIndex(t => t.id === taskId)
+    if (taskIndex === -1) throw new Error('Task not found')
+    
+    const task = tasks[taskIndex]
+    if (!task.subtasks) throw new Error('No subtasks found')
+    
+    const reorderedSubtasks = subtaskIds.map(id => 
+      task.subtasks.find(s => s.Id === id)
+    ).filter(Boolean)
+    
+    task.subtasks = reorderedSubtasks
+    tasks[taskIndex] = { ...task }
+    
+    return task.subtasks
+  },
+
+  getTaskProgress(taskId) {
+    const task = tasks.find(t => t.id === taskId)
+    if (!task) throw new Error('Task not found')
+    return calculateTaskProgress(task)
   }
 }

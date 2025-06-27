@@ -1,5 +1,5 @@
 [
-  {
+{
     "id": "1",
     "title": "Review project proposals",
     "completed": false,
@@ -7,9 +7,14 @@
     "category": "work",
     "dueDate": "2024-01-15T09:00:00.000Z",
     "createdAt": "2024-01-14T08:00:00.000Z",
-    "completedAt": null
+    "completedAt": null,
+    "subtasks": [
+      { "Id": 1, "title": "Read proposal documents", "completed": true },
+      { "Id": 2, "title": "Analyze budget requirements", "completed": false },
+      { "Id": 3, "title": "Schedule team review meeting", "completed": false }
+    ]
   },
-  {
+{
     "id": "2",
     "title": "Buy groceries for the week",
     "completed": false,
@@ -17,9 +22,13 @@
     "category": "personal",
     "dueDate": "2024-01-15T18:00:00.000Z",
     "createdAt": "2024-01-14T10:30:00.000Z",
-    "completedAt": null
+    "completedAt": null,
+    "subtasks": [
+      { "Id": 1, "title": "Make shopping list", "completed": true },
+      { "Id": 2, "title": "Visit grocery store", "completed": false }
+    ]
   },
-  {
+{
     "id": "3",
     "title": "Call dentist for appointment",
     "completed": true,
@@ -27,9 +36,13 @@
     "category": "health",
     "dueDate": "2024-01-14T14:00:00.000Z",
     "createdAt": "2024-01-13T16:00:00.000Z",
-    "completedAt": "2024-01-14T11:30:00.000Z"
+    "completedAt": "2024-01-14T11:30:00.000Z",
+    "subtasks": [
+      { "Id": 1, "title": "Find dentist phone number", "completed": true },
+      { "Id": 2, "title": "Call and schedule", "completed": true }
+    ]
   },
-  {
+{
     "id": "4",
     "title": "Prepare presentation slides",
     "completed": false,
@@ -37,9 +50,15 @@
     "category": "work",
     "dueDate": "2024-01-16T10:00:00.000Z",
     "createdAt": "2024-01-14T09:15:00.000Z",
-    "completedAt": null
+    "completedAt": null,
+    "subtasks": [
+      { "Id": 1, "title": "Create outline", "completed": false },
+      { "Id": 2, "title": "Design slides", "completed": false },
+      { "Id": 3, "title": "Add content", "completed": false },
+      { "Id": 4, "title": "Review and finalize", "completed": false }
+    ]
   },
-  {
+{
     "id": "5",
     "title": "Book flight tickets",
     "completed": false,
@@ -47,7 +66,12 @@
     "category": "travel",
     "dueDate": "2024-01-17T12:00:00.000Z",
     "createdAt": "2024-01-14T14:20:00.000Z",
-    "completedAt": null
+    "completedAt": null,
+    "subtasks": [
+      { "Id": 1, "title": "Compare flight prices", "completed": true },
+      { "Id": 2, "title": "Select preferred flight", "completed": false },
+      { "Id": 3, "title": "Complete booking", "completed": false }
+    ]
   },
   {
     "id": "6",

@@ -18,7 +18,8 @@ const TaskItem = ({
 }) => {
   const [isCompleting, setIsCompleting] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
-
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [editingSubtask, setEditingSubtask] = useState(null)
   const category = categories.find(c => c.id === task.category)
   const isOverdue = task.dueDate && isPast(new Date(task.dueDate)) && !task.completed
 
@@ -60,6 +61,26 @@ const TaskItem = ({
     setTimeout(() => {
       document.body.removeChild(confettiContainer)
     }, 1500)
+}
+
+  const ProgressBar = ({ completed, total }) => {
+    const percentage = total > 0 ? (completed / total) * 100 : 0
+    
+    return (
+      <div className="flex items-center space-x-2 text-xs text-gray-600">
+        <div className="flex-1 bg-gray-200 rounded-full h-2">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${percentage}%` }}
+            className="bg-gradient-to-r from-primary to-secondary h-2 rounded-full"
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          />
+        </div>
+        <span className="min-w-0 whitespace-nowrap">
+          {completed}/{total}
+        </span>
+      </div>
+    )
   }
 
   const formatDueDate = (dueDate) => {
@@ -80,6 +101,51 @@ const TaskItem = ({
     }
   }
 
+  const hasSubtasks = task.subtasks && task.subtasks.length > 0
+  const subtaskProgress = hasSubtasks ? {
+    completed: task.subtasks.filter(s => s.completed).length,
+    total: task.subtasks.length,
+    percentage: Math.round((task.subtasks.filter(s => s.completed).length / task.subtasks.length) * 100)
+  } : { completed: 0, total: 0, percentage: 0 }
+
+  const handleSubtaskToggle = async (subtaskId) => {
+    const subtask = task.subtasks.find(s => s.Id === subtaskId)
+    if (!subtask) return
+    
+    try {
+      // This would be handled by parent component
+      onToggleComplete?.(task.id, subtaskId, !subtask.completed)
+    } catch (err) {
+      console.error('Failed to toggle subtask:', err)
+    }
+  }
+
+  const handleSubtaskEdit = (subtask) => {
+    setEditingSubtask(subtask)
+  }
+
+  const handleSubtaskSave = async (subtaskId, newTitle) => {
+    if (!newTitle.trim()) return
+    
+    try {
+      // This would be handled by parent component
+      onEdit?.(task, { type: 'subtask', subtaskId, title: newTitle.trim() })
+      setEditingSubtask(null)
+    } catch (err) {
+      console.error('Failed to update subtask:', err)
+    }
+  }
+
+  const handleSubtaskDelete = async (subtaskId) => {
+    if (!window.confirm('Are you sure you want to delete this subtask?')) return
+    
+    try {
+      // This would be handled by parent component
+      onDelete?.(task.id, subtaskId)
+    } catch (err) {
+      console.error('Failed to delete subtask:', err)
+    }
+  }
   return (
     <motion.div
       layout
@@ -107,12 +173,22 @@ className={`card p-4 group ${task.completed ? 'opacity-70' : ''} ${isOverdue ? '
           onChange={handleToggleComplete}
           disabled={isCompleting}
           size="md"
-        />
+/>
         <div className="flex-1 min-w-0">
           <div className="flex items-center space-x-2 mb-2">
             <h3 className={`text-base font-medium ${task.completed ? 'line-through text-gray-500' : 'text-gray-900'} truncate`}>
               {task.title}
             </h3>
+            
+            {hasSubtasks && (
+              <Button
+                variant="ghost"
+                size="sm"
+                icon={isExpanded ? "ChevronUp" : "ChevronDown"}
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="text-gray-400 hover:text-primary p-1"
+              />
+            )}
             
             {isOverdue && (
               <Badge variant="error" size="sm" icon="AlertTriangle">
@@ -120,6 +196,12 @@ className={`card p-4 group ${task.completed ? 'opacity-70' : ''} ${isOverdue ? '
               </Badge>
             )}
           </div>
+          
+          {hasSubtasks && (
+            <div className="mb-3">
+              <ProgressBar completed={subtaskProgress.completed} total={subtaskProgress.total} />
+            </div>
+          )}
           
           <div className="flex items-center space-x-3 text-sm">
             <Badge variant={getPriorityColor(task.priority)} size="sm">
@@ -137,7 +219,7 @@ className={`card p-4 group ${task.completed ? 'opacity-70' : ''} ${isOverdue ? '
                   color: category.color 
                 }}
               >
-{category.name}
+                {category.name}
               </Badge>
             )}
             
@@ -175,8 +257,82 @@ className={`card p-4 group ${task.completed ? 'opacity-70' : ''} ${isOverdue ? '
             onClick={() => onDelete?.(task.id)}
             className="text-gray-400 hover:text-error"
           />
-        </div>
+</div>
       </div>
+
+      {/* Subtasks Section */}
+      <AnimatePresence>
+        {isExpanded && hasSubtasks && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mt-4 pl-6 border-l-2 border-gray-100"
+          >
+            <div className="space-y-2">
+              {task.subtasks.map((subtask) => (
+                <motion.div
+                  key={subtask.Id}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="flex items-center space-x-3 group/subtask"
+                >
+                  <Checkbox
+                    checked={subtask.completed}
+                    onChange={() => handleSubtaskToggle(subtask.Id)}
+                    size="sm"
+                    className="text-primary"
+                  />
+                  
+                  {editingSubtask?.Id === subtask.Id ? (
+                    <div className="flex-1 flex items-center space-x-2">
+                      <input
+                        type="text"
+                        defaultValue={subtask.title}
+                        className="flex-1 text-sm bg-transparent border-b border-primary focus:outline-none"
+                        onBlur={(e) => handleSubtaskSave(subtask.Id, e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            handleSubtaskSave(subtask.Id, e.target.value)
+                          }
+                          if (e.key === 'Escape') {
+                            setEditingSubtask(null)
+                          }
+                        }}
+                        autoFocus
+                      />
+                    </div>
+                  ) : (
+                    <span 
+                      className={`flex-1 text-sm ${subtask.completed ? 'line-through text-gray-500' : 'text-gray-700'}`}
+                      onDoubleClick={() => handleSubtaskEdit(subtask)}
+                    >
+                      {subtask.title}
+                    </span>
+                  )}
+                  
+                  <div className="flex items-center space-x-1 opacity-0 group-hover/subtask:opacity-100 transition-opacity">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      icon="Edit2"
+                      onClick={() => handleSubtaskEdit(subtask)}
+                      className="text-gray-400 hover:text-primary p-1"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      icon="Trash2"
+                      onClick={() => handleSubtaskDelete(subtask.Id)}
+                      className="text-gray-400 hover:text-error p-1"
+                    />
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {showConfetti && (
